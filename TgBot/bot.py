@@ -16,7 +16,6 @@ async def any_message(                   # [4]
     print(f"{message.from_user.full_name}: {message.text}")
     await message.answer("Hello world!") # [6]
 
-
 async def main():
     load_dotenv()
     token = getenv("BOT_TOKEN")          # [7]
