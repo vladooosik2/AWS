@@ -15,6 +15,7 @@ async def cmd_start(message: Message):
     await message.answer("Let`s talk!")
 
 
+@dp.message()
 async def any_message(                  
         message: Message,                
 ):
