@@ -15,6 +15,12 @@ load_dotenv()
 dp = Dispatcher()                        # [2]
 client = genai.Client()
 
+
+def extract_text(response) -> str:
+    parts = response.candidates[0].content.parts
+    texts = [part.text for part in parts if getattr(part, "text", None)]
+    return "".join(texts).strip()
+
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
     await message.answer("Let`s talk!")
@@ -33,7 +39,8 @@ async def any_message(                   # [4]
         print(f"{type(err)}: {err}")
         await message.answer("Щось пішло не так")
     else:
-        await message.answer(str(response.text)) # [6]
+        answer = extract_text(response)
+        await message.answer(answer or "Пустой ответ") # [6]
 
 
 async def main():
