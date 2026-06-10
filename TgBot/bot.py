@@ -5,25 +5,38 @@ from dotenv import load_dotenv
 # pip install aiogram
 from aiogram import Bot, Dispatcher      # [1]
 from aiogram.types import Message        # [1]
-from aiogram.filters import Command      
+from aiogram.filters import Command
+
+# pip install google-genai
+from google import genai
+
+load_dotenv()
 
 dp = Dispatcher()                        # [2]
-
+client = genai.Client()
 
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
     await message.answer("Let`s talk!")
 
-
-@dp.message()
-async def any_message(                  
-        message: Message,                
+@dp.message()                            # [3]
+async def any_message(                   # [4]
+        message: Message,                # [5]
 ):
     print(f"{message.from_user.full_name}: {message.text}")
-    await message.answer("Hello world!") 
+    try:
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=message.text,
+        )
+    except Exception as err:
+        print(f"{type(err)}: {err}")
+        await message.answer("Щось пішло не так")
+    else:
+        await message.answer(str(response.text)) # [6]
+
 
 async def main():
-    load_dotenv()
     token = getenv("BOT_TOKEN")          # [7]
     if not token:                        # [7]
         error = "No token provided"      # [7]
