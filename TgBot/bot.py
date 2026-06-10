@@ -13,6 +13,7 @@ dp = Dispatcher()                        # [2]
 async def any_message(                   # [4]
         message: Message,                # [5]
 ):
+    print(f"{message.from_user.full_name}: {message.text}")
     await message.answer("Hello world!") # [6]
 
 
