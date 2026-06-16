@@ -56,7 +56,7 @@ async def cmd_roll(message: Message):
         max_value = 100
 
     roll_result = random.randint(1, max_value)
-    await message.answer(f"You rolled: {roll_result}")
+    await message.answer(f"Твій результат: {roll_result}")
 
 # Обробник команди /meowfact
 @dp.message(Command("meowfact"))
@@ -70,7 +70,7 @@ async def cmd_meowfact(message: Message):
         facts = response.json()['data']
         await message.answer("\n\n".join(facts))
     else:
-        await message.answer("Something wrong!")
+        await message.answer("Щось пішло не так!")
 
 # Обробних всіх інших повідомлень
 @dp.message()                            # [3]
