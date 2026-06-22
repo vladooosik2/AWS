@@ -10,6 +10,7 @@ from aiogram.filters import Command
 # pip install google-genai
 from google import genai
 
+
 import requests
 import random
 

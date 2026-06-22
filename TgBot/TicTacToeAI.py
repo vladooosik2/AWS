@@ -49,3 +49,4 @@ class TicTacToeAI:
             if str(move) in response_text:
                 return move
         return available_moves[0] if available_moves else None
+    
