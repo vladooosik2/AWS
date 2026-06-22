@@ -81,26 +81,34 @@ async def cmd_meowfact(message: Message):
 # Обробник команди /play_ttt
 @dp.message(Command("play_ttt"))
 async def cmd_play_ttt(message: Message):
-    user_id = message.from_user.id
-    if user_id in active_games:
-        await message.answer("Ви вже маєте активну гру! Завершіть її або введіть /quit_ttt")
-        return
+    try:
+        user_id = message.from_user.id
+        if user_id in active_games:
+            await message.answer("Ви вже маєте активну гру! Завершіть її або введіть /quit_ttt")
+            return
 
-    if client is None:
-        await message.answer("AI недоступна. Спробуйте пізніше.")
-        return
+        if client is None:
+            await message.answer("AI недоступна. Спробуйте пізніше.")
+            return
 
-    game = TicTacToe()
-    active_games[user_id] = game
+        if ttt_ai is None:
+            await message.answer("Помилка ініціалізації AI.")
+            return
 
-    board_display = game.get_board_display()
-    await message.answer(
-        f"🎮 Крестики-нолики!\n\n"
-        f"Ви грієте Х, я гаю O\n\n"
-        f"{board_display}\n\n"
-        f"Ваш хід! Введіть число від 1 до 9\n"
-        f"Команда /quit_ttt щоб вийти"
-    )
+        game = TicTacToe()
+        active_games[user_id] = game
+
+        board_display = game.get_board_display()
+        await message.answer(
+            f"🎮 Крестики-нолики!\n\n"
+            f"Ви грієте Х, я гаю O\n\n"
+            f"{board_display}\n\n"
+            f"Ваш хід! Введіть число від 1 до 9\n"
+            f"Команда /quit_ttt щоб вийти"
+        )
+    except Exception as err:
+        print(f"Error in play_ttt: {type(err).__name__}: {err}")
+        await message.answer(f"Помилка: {err}")
 
 # Обробник команди /quit_ttt
 @dp.message(Command("quit_ttt"))
