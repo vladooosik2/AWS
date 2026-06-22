@@ -18,7 +18,7 @@ class TicTacToeAI:
             prompt = PromptBuilder.tictactoe_prompt(board_state, available_moves)
 
             response = self.client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-1.5-flash",
                 contents=prompt,
             )
             move = self.parse_ai_response(response.text, available_moves)
