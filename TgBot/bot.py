@@ -131,8 +131,10 @@ async def any_message(                   # [4]
     # Перевіряємо, чи є активна гра
     if user_id in active_games:
         game = active_games[user_id]
+        print(f"Game in progress for user {user_id}")
         try:
             move_num = int(message.text)
+            print(f"User move: {move_num}")
             pos = game.is_valid_move(move_num)
 
             if pos is None:
@@ -153,7 +155,9 @@ async def any_message(                   # [4]
                 return
 
             # AI робить хід
+            print("Getting AI move...")
             ai_move = await ttt_ai.get_ai_move(game)
+            print(f"AI move result: {ai_move}")
             if ai_move is None:
                 await message.answer("Помилка AI. Гру завершено.")
                 del active_games[user_id]
