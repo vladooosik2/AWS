@@ -205,6 +205,8 @@ async def main():
     ttt_ai = TicTacToeAI(client)
 
     print("Starting bot...")
+    print(f"Client initialized: {client is not None}")
+    print(f"AI initialized: {ttt_ai is not None}")
     try:
         await dp.start_polling(bot)      # [9]
     finally:
