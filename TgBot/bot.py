@@ -179,7 +179,6 @@ async def any_message(                   # [4]
             await message.answer(f"Запит: {prompt}")
             response = client.models.generate_content(
                 model="gemini-3.5-flash",
-                contents=message.text,
                 contents=prompt,
             )
         except Exception as err:
