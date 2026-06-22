@@ -5,7 +5,7 @@ class TicTacToeAI:
         self.client = gemini_client
 
     async def get_ai_move(self, game):
-        """Отримує хід AI від Gemini"""
+        #Отримує хід AI від Gemini
         if self.client is None:
             return None
 
@@ -30,7 +30,7 @@ class TicTacToeAI:
             return None
 
     def get_board_representation(self, game):
-        """Представляє дошку для Gemini"""
+        #Представляє дошку для Gemini
         board_str = ""
         for i in range(3):
             row = []
@@ -44,7 +44,7 @@ class TicTacToeAI:
         return board_str
 
     def parse_ai_response(self, response_text, available_moves):
-        """Парсить відповідь Gemini для отримання ходу"""
+        #Парсить відповідь Gemini для отримання ходу
         for move in available_moves:
             if str(move) in response_text:
                 return move
