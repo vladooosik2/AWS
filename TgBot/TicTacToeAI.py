@@ -21,7 +21,6 @@ class TicTacToeAI:
                 model="gemini-2.0-flash",
                 contents=prompt,
             )
-
             move = self.parse_ai_response(response.text, available_moves)
             return move
 

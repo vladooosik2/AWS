@@ -78,4 +78,3 @@ class TicTacToe:
         if self.winner == 'draw':
             return "нічия"
         return f"переможець: {self.winner}"
-    
