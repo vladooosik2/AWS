@@ -1,4 +1,5 @@
 import asyncio                           # [1]
+import types
 from os import getenv                    # [1]
 from dotenv import load_dotenv
 
@@ -16,10 +17,17 @@ import random
 from PromptBuilder import PromptBuilder
 from TicTacToe import TicTacToe
 from TicTacToeAI import TicTacToeAI
+from db import DataBase
 
 dp = Dispatcher()                        # [2]
 client = None
 bot = None
+
+try:
+    test_db = DataBase("TestTable")
+except Exception as err:
+    print(f"{type(err)}: {err}")
+
 active_games = {}  # {user_id: TicTacToe instance}
 ttt_ai = None
 
@@ -47,6 +55,14 @@ def auth_gemini_api():
 @dp.message(Command("start"))
 async def cmd_start(message: Message):
     await message.answer("Let`s talk, dude!")
+
+# Обробник команди /db
+@dp.message(Command("db"))
+async def cmd_db(message: Message):
+    try:
+        await message.answer(str(test_db))
+    except Exception as err:
+        await message.answer(f"{type(err)}: {err}")
 
 # Обробник команди /roll
 @dp.message(Command("roll"))
