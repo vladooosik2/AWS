@@ -30,8 +30,8 @@ jobs:
             pip install python-dotenv aiogram google-genai
             
             echo "✅ Verifying bot syntax..."
-            python3.14 -m py_compile TgBot/bot.py
-            
+            python3 -m py_compile TgBot/bot.py
+
             echo "🚀 Restarting service..."
             sudo systemctl restart tgbot.service
             echo "✨ Deploy complete!"
