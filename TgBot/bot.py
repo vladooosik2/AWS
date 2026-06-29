@@ -5,14 +5,14 @@ from os import getenv
 from dotenv import load_dotenv
 
 # pip install aiogram
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F
 from aiogram.types import (
     Message,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     CallbackQuery,
 )
-from aiogram.filters import Command, F
+from aiogram.filters import Command
 
 # pip install google-genai
 from google import genai
