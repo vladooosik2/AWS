@@ -404,7 +404,7 @@ async def cmd_quit_ttt(message: Message):
     else:
         await message.answer("No active game.")
 
-@dp.message()
+@dp.message(lambda message: message.text and not message.text.startswith('/'))
 async def any_message(message: Message):
     user_id = message.from_user.id
     print(f"{message.from_user.full_name}: {message.text}")
