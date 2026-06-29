@@ -18,13 +18,20 @@ jobs:
           script: |
             set -e
             cd /home/ec2-user/AWS
+            
+            echo "🧹 Cleaning up Python cache to prevent conflicts..."
+            rm -rf TgBot/__pycache__
+            
             echo "🔄 Pulling latest changes..."
             git pull origin main
+            
             echo "📦 Activating virtual environment and installing dependencies..."
             source .venv/bin/activate
             pip install python-dotenv aiogram google-genai
+            
             echo "✅ Verifying bot syntax..."
             python3.14 -m py_compile TgBot/bot.py
+            
             echo "🚀 Restarting service..."
             sudo systemctl restart tgbot.service
             echo "✨ Deploy complete!"
