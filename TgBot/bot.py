@@ -145,6 +145,7 @@ async def cmd_add_track(message: Message):
 
 @dp.message(Command("my_tracks"))
 async def cmd_my_tracks(message: Message):
+    print(f"🔍 DEBUG: /my_tracks command received from user {message.from_user.id}")
     products = db.get_user_tracked_products(message.from_user.id)
     if not products:
         await message.answer("You have no tracked products.")
@@ -167,6 +168,7 @@ async def cmd_my_tracks(message: Message):
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=inline_keyboard)
     await message.answer("\n\n".join(text_lines), reply_markup=keyboard)
+    print(f"✅ /my_tracks response sent")
 
 @dp.callback_query(lambda query: query.data and query.data.startswith('delete_track:'))
 async def callback_delete_track(callback: CallbackQuery):
@@ -404,10 +406,17 @@ async def cmd_quit_ttt(message: Message):
     else:
         await message.answer("No active game.")
 
-@dp.message(F.text & ~F.text.startswith('/'))
+@dp.message(F.text)
 async def any_message(message: Message):
     user_id = message.from_user.id
-    print(f"{message.from_user.full_name}: {message.text}")
+    
+    # Защита: НЕ обрабатываем команды (начинающиеся со слэша)
+    if message.text.startswith('/'):
+        print(f"⚠️ WARNING: Command '{message.text}' was NOT caught by command handler! It reached text handler!")
+        print(f"   This should NOT happen. Command handler failed to process it.")
+        return
+    
+    print(f"💬 Text message from {message.from_user.full_name}: {message.text}")
 
     if user_id in active_games:
         game = active_games[user_id]
@@ -485,9 +494,21 @@ async def main():
 
     price_checker_task = asyncio.create_task(price_check_scheduler())
 
-    print("Starting bot...")
+    print("=" * 60)
+    print("🤖 BOT STARTING...")
     print(f"Client initialized: {client is not None}")
     print(f"AI initialized: {ttt_ai is not None}")
+    print(f"Database initialized: {db is not None}")
+    print("Command handlers registered:")
+    print("  - /start")
+    print("  - /db")
+    print("  - /add_track")
+    print("  - /my_tracks ← THIS SHOULD CATCH YOUR COMMAND")
+    print("  - /roll")
+    print("  - /meowfact")
+    print("  - /play_ttt")
+    print("  - /quit_ttt")
+    print("=" * 60)
 
     try:
         await dp.start_polling(bot)
