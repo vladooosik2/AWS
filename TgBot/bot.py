@@ -252,15 +252,18 @@ async def fetch_product_info(product_url: str) -> dict:
 
     # 1) Try JSON-LD / schema.org price data
     for script in soup.find_all('script', type='application/ld+json'):
+        script_text = script.string or script.get_text()
+        if not script_text:
+            continue
+
         try:
-            data = json.loads(script.string or '{}')
+            data = json.loads(script_text)
         except json.JSONDecodeError:
             continue
 
         if isinstance(data, dict):
             if data.get('@type') in ('Product', 'Offer'):
                 price = data.get('price') or data.get('offers', {}).get('price')
-                currency = data.get('priceCurrency') or data.get('offers', {}).get('priceCurrency')
                 if price:
                     price_text = str(price)
                     break
@@ -273,6 +276,12 @@ async def fetch_product_info(product_url: str) -> dict:
                         break
             if price_text:
                 break
+
+    # 1.5) Fallback: raw page price data from inline JSON
+    if not price_text:
+        json_price_match = re.search(r'"price"\s*:\s*"?([\d.,]+)"?', text)
+        if json_price_match:
+            price_text = json_price_match.group(1)
 
     # 2) Try common HTML price selectors
     if not price_text:
