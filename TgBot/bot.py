@@ -104,12 +104,14 @@ async def cmd_help(message: Message):
 async def cmd_ai_on(message: Message):
     global ai_enabled
     ai_enabled = True
+    print(f"AI enabled by user {message.from_user.id}")
     await message.answer("🤖 AI responses enabled.")
 
 @dp.message(Command("ai_off"))
 async def cmd_ai_off(message: Message):
     global ai_enabled
     ai_enabled = False
+    print(f"AI disabled by user {message.from_user.id}")
     await message.answer("🤖 AI responses disabled.")
 
 async def add_track_from_message(message: Message, product_url: str, target_price: float | None = None):
@@ -509,8 +511,8 @@ async def any_message(message: Message):
 
     # Защита: НЕ обрабатываем команды (начинающиеся со слэша)
     if message.text.startswith('/'):
-        print(f"⚠️ WARNING: Command '{message.text}' was NOT caught by command handler! It reached text handler!")
-        print(f"   This should NOT happen. Command handler failed to process it.")
+        print(f"⚠️ WARNING: Command '{message.text}' reached text handler instead of command handler")
+        await message.answer("🤖 Command detected, but it was not handled by a registered command handler.")
         return
 
     if await try_handle_direct_track(message):
