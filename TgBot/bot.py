@@ -82,6 +82,21 @@ async def cmd_start(message: Message):
         "Hello! I can track product prices. Use /add_track <url> [target_price] or /my_tracks."
     )
 
+@dp.message(Command("help"))
+async def cmd_help(message: Message):
+    await message.answer(
+        "Available commands:\n"
+        "/start — start the bot\n"
+        "/help — show this help\n"
+        "/add_track <url> [target_price] — track a product\n"
+        "/my_tracks — show your tracked products\n"
+        "/db — show database info\n"
+        "/roll [max] — roll a random number\n"
+        "/meowfact [count] — get cat facts\n"
+        "/play_ttt — start Tic-Tac-Toe\n"
+        "/quit_ttt — quit the current game"
+    )
+
 @dp.message(Command("db"))
 async def cmd_db(message: Message):
     try:
