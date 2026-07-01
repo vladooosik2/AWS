@@ -95,7 +95,8 @@ async def cmd_help(message: Message):
         "/roll [max] — roll a random number\n"
         "/meowfact [count] — get cat facts\n"
         "/play_ttt — start Tic-Tac-Toe\n"
-        "/quit_ttt — quit the current game"
+        "/quit_ttt — quit the current game\n"
+        "You can also send a product link directly and I will try to track it."
     )
 
 @dp.message(Command("ai_on"))
@@ -110,29 +111,7 @@ async def cmd_ai_off(message: Message):
     ai_enabled = False
     await message.answer("🤖 AI responses disabled.")
 
-@dp.message(Command("db"))
-async def cmd_db(message: Message):
-    try:
-        await message.answer(str(test_db))
-    except Exception as err:
-        await message.answer(f"{type(err)}: {err}")
-
-@dp.message(Command("add_track"))
-async def cmd_add_track(message: Message):
-    parts = message.text.strip().split(maxsplit=2)
-    if len(parts) < 2:
-        await message.answer("Usage: /add_track <url> [target_price]")
-        return
-
-    product_url = parts[1].strip()
-    target_price = None
-    if len(parts) == 3:
-        try:
-            target_price = float(parts[2].replace(',', '.'))
-        except ValueError:
-            await message.answer("Invalid target price format. Use a number.")
-            return
-
+async def add_track_from_message(message: Message, product_url: str, target_price: float | None = None):
     await message.answer("Checking product page, please wait...")
     try:
         product_info = await fetch_product_info(product_url)
@@ -170,6 +149,31 @@ async def cmd_add_track(message: Message):
         f"Target price: {target_price}\n"
         f"ID: {item_id}"
     )
+
+@dp.message(Command("db"))
+async def cmd_db(message: Message):
+    try:
+        await message.answer(str(test_db))
+    except Exception as err:
+        await message.answer(f"{type(err)}: {err}")
+
+@dp.message(Command("add_track"))
+async def cmd_add_track(message: Message):
+    parts = message.text.strip().split(maxsplit=2)
+    if len(parts) < 2:
+        await message.answer("Usage: /add_track <url> [target_price]")
+        return
+
+    product_url = parts[1].strip()
+    target_price = None
+    if len(parts) == 3:
+        try:
+            target_price = float(parts[2].replace(',', '.'))
+        except ValueError:
+            await message.answer("Invalid target price format. Use a number.")
+            return
+
+    await add_track_from_message(message, product_url, target_price)
 
 @dp.message(Command("my_tracks"))
 async def cmd_my_tracks(message: Message):
@@ -434,6 +438,30 @@ async def cmd_quit_ttt(message: Message):
     else:
         await message.answer("No active game.")
 
+async def try_handle_direct_track(message: Message) -> bool:
+    text = message.text.strip()
+    if not text or text.startswith('/'):
+        return False
+
+    url_match = re.search(r'https?://\S+', text)
+    if not url_match:
+        return False
+
+    product_url = url_match.group(0).rstrip('.,;:')
+    target_price = None
+
+    rest_text = text.replace(product_url, '').strip()
+    if rest_text:
+        price_match = re.search(r'(?<!\d)(\d+(?:[.,]\d+)?)(?!\d)', rest_text)
+        if price_match:
+            try:
+                target_price = float(price_match.group(1).replace(',', '.'))
+            except ValueError:
+                pass
+
+    await add_track_from_message(message, product_url, target_price)
+    return True
+
 @dp.message(F.text)
 async def any_message(message: Message):
     user_id = message.from_user.id
@@ -442,6 +470,9 @@ async def any_message(message: Message):
     if message.text.startswith('/'):
         print(f"⚠️ WARNING: Command '{message.text}' was NOT caught by command handler! It reached text handler!")
         print(f"   This should NOT happen. Command handler failed to process it.")
+        return
+
+    if await try_handle_direct_track(message):
         return
 
     if not ai_enabled:
