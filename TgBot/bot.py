@@ -39,6 +39,7 @@ except Exception as err:
 
 active_games = {}
 ttt_ai = None
+ai_enabled = True
 
 # Telegram and Gemini initialization helpers
 def auth_telegram():
@@ -96,6 +97,18 @@ async def cmd_help(message: Message):
         "/play_ttt — start Tic-Tac-Toe\n"
         "/quit_ttt — quit the current game"
     )
+
+@dp.message(Command("ai_on"))
+async def cmd_ai_on(message: Message):
+    global ai_enabled
+    ai_enabled = True
+    await message.answer("🤖 AI responses enabled.")
+
+@dp.message(Command("ai_off"))
+async def cmd_ai_off(message: Message):
+    global ai_enabled
+    ai_enabled = False
+    await message.answer("🤖 AI responses disabled.")
 
 @dp.message(Command("db"))
 async def cmd_db(message: Message):
@@ -424,13 +437,17 @@ async def cmd_quit_ttt(message: Message):
 @dp.message(F.text)
 async def any_message(message: Message):
     user_id = message.from_user.id
-    
+
     # Защита: НЕ обрабатываем команды (начинающиеся со слэша)
     if message.text.startswith('/'):
         print(f"⚠️ WARNING: Command '{message.text}' was NOT caught by command handler! It reached text handler!")
         print(f"   This should NOT happen. Command handler failed to process it.")
         return
-    
+
+    if not ai_enabled:
+        await message.answer("🤖 AI responses are disabled. Use /ai_on to enable them.")
+        return
+
     print(f"💬 Text message from {message.from_user.full_name}: {message.text}")
 
     if user_id in active_games:
