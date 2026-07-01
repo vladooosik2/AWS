@@ -1,4 +1,5 @@
 ﻿import asyncio
+import json
 import os
 import re
 from os import getenv
@@ -248,30 +249,61 @@ async def fetch_product_info(product_url: str) -> dict:
         name = product_url
 
     price_text = None
-    selectors = [
-        'meta[itemprop="price"]',
-        'meta[property="product:price:amount"]',
-        'span[class*="price"]',
-        'div[class*="price"]',
-        'p[class*="price"]',
-        'span[class*="product-price"]',
-        'div[class*="product-card__price"]',
-    ]
-    for selector in selectors:
-        tag = soup.select_one(selector)
-        if tag:
-            price_text = tag.get('content') if tag.has_attr('content') else tag.get_text()
+
+    # 1) Try JSON-LD / schema.org price data
+    for script in soup.find_all('script', type='application/ld+json'):
+        try:
+            data = json.loads(script.string or '{}')
+        except json.JSONDecodeError:
+            continue
+
+        if isinstance(data, dict):
+            if data.get('@type') in ('Product', 'Offer'):
+                price = data.get('price') or data.get('offers', {}).get('price')
+                currency = data.get('priceCurrency') or data.get('offers', {}).get('priceCurrency')
+                if price:
+                    price_text = str(price)
+                    break
+        elif isinstance(data, list):
+            for item in data:
+                if isinstance(item, dict) and item.get('@type') in ('Product', 'Offer'):
+                    price = item.get('price') or item.get('offers', {}).get('price')
+                    if price:
+                        price_text = str(price)
+                        break
             if price_text:
                 break
 
+    # 2) Try common HTML price selectors
     if not price_text:
-        candidates = ' '.join(
-            tag.get_text(separator=' ', strip=True)
-            for tag in soup.find_all(['span', 'div', 'p'])
-        )
+        selectors = [
+            'meta[itemprop="price"]',
+            'meta[property="product:price:amount"]',
+            'span[class*="price"]',
+            'div[class*="price"]',
+            'p[class*="price"]',
+            'span[class*="product-price"]',
+            'div[class*="product-card__price"]',
+        ]
+        for selector in selectors:
+            tag = soup.select_one(selector)
+            if tag:
+                price_text = tag.get('content') if tag.has_attr('content') else tag.get_text()
+                if price_text:
+                    break
+
+    # 3) Fall back to any visible currency text
+    if not price_text:
+        candidates = []
+        for tag in soup.find_all(['span', 'div', 'p']):
+            text = tag.get_text(separator=' ', strip=True)
+            if any(x in text for x in ['грн', '₴', 'uah', 'руб', 'usd']):
+                candidates.append(text)
+
+        candidates_text = ' '.join(candidates)
         currency_search = re.search(
             r'([\d\s.,]+)\s*(грн|uah|₴|rub|руб|usd)?',
-            candidates,
+            candidates_text,
             re.IGNORECASE,
         )
         if currency_search:
